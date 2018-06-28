@@ -1,0 +1,64 @@
+ad. 27. ZnaleŸæ koty zajmuj¹ce pierwszych n miejsc pod wzglêdem ca³kowitej
+liczby spo¿ywanych myszy (koty o tym samym spo¿yciu zajmuj¹ TO samo miejsce!).
+Zadanie rozwi¹zaæ na cztery sposoby:
+a.  wykorzystuj¹c podzapytanie skorelowane,
+b.  wykorzystuj¹c pseudokolumnê ROWNUM,
+c.  wykorzystuj¹c z³¹czenie relacji Kocury z relacj¹ Kocury
+d.  wykorzystuj¹c funkcje analityczne.
+ 
+SELECT
+  pseudo "PSEUDO",
+  NVL(przydzial_myszy,0) + NVL(myszy_extra,0) "ZJADA"
+FROM
+  Kocury
+WHERE
+  &n > (
+    SELECT COUNT(*)
+    FROM Kocury Kocury2
+    WHERE NVL(Kocury.przydzial_myszy,0) + NVL(Kocury.myszy_extra,0)
+       < NVL(Kocury2.przydzial_myszy,0) + NVL(Kocury2.myszy_extra,0)
+  )
+ORDER BY "ZJADA" DESC;            
+ 
+
+
+SELECT
+  pseudo "PSEUDO",
+  NVL(przydzial_myszy,0) + NVL(myszy_extra,0) "ZJADA"
+FROM
+  Kocury
+WHERE       NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0) IN (
+                SELECT  *
+                FROM    (
+                            SELECT      DISTINCT NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0)
+                            FROM        Kocury
+                            ORDER BY    1 DESC
+                        )
+                WHERE   ROWNUM <= &n);  
+               
+SELECT
+  Kocury.pseudo "PSEUDO",
+  NVL(Kocury.przydzial_myszy,0) + NVL(Kocury.myszy_extra,0) "ZJADA"
+FROM
+  Kocury, Kocury Kocury2
+WHERE
+     NVL(Kocury.przydzial_myszy,0) + NVL(Kocury.myszy_extra,0)<= NVL(Kocury2.przydzial_myszy,0) + NVL(Kocury2.myszy_extra,0)
+GROUP BY
+  Kocury.pseudo, NVL(Kocury.przydzial_myszy,0) + NVL(Kocury.myszy_extra,0)
+HAVING
+  COUNT(DISTINCT NVL(Kocury2.przydzial_myszy,0) + NVL(Kocury2.myszy_extra,0))
+    <= &n
+ORDER BY "ZJADA" DESC;
+ 
+SELECT
+PSEUDO, ZJADA
+  FROM
+(
+  SELECT pseudo AS PSEUDO,
+  NVL(przydzial_myszy,0) + NVL(myszy_extra,0) AS ZJADA,
+  DENSE_RANK()
+  OVER (ORDER BY NVL(Kocury.przydzial_myszy,0) + NVL(Kocury.myszy_extra,0) DESC) POZYCJA
+FROM
+  Kocury
+  )
+    WHERE &n>= POZYCJA;

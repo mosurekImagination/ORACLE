@@ -1,0 +1,35 @@
+﻿-- 23 październik
+SELECT
+  PSEUDO,
+  W_STADKU_OD "W STADKU",
+  CASE
+  WHEN EXTRACT(DAY FROM W_STADKU_OD) <= 15
+    THEN
+      CASE
+      WHEN NEXT_DAY(LAST_DAY('2017-10-23') - 7, 'ŚRODA') < '2017-10-23'
+        THEN NEXT_DAY(LAST_DAY(ADD_MONTHS('2017-10-23', 1)) - 7, 'ŚRODA')
+      ELSE
+        NEXT_DAY(LAST_DAY('2017-10-23') - 7, 'ŚRODA')
+      END
+  ELSE
+    NEXT_DAY(LAST_DAY(ADD_MONTHS('2017-10-23', 1)) - 7, 'ŚRODA')
+  END         "WYPLATA"
+FROM Kocury;
+
+-- 26 październik
+SELECT
+  PSEUDO,
+  W_STADKU_OD "W STADKU",
+  CASE
+  WHEN EXTRACT(DAY FROM W_STADKU_OD) <= 15
+    THEN
+      CASE
+      WHEN NEXT_DAY(LAST_DAY('2017-10-26') - 7, 'ŚRODA') < '2017-10-26'
+        THEN NEXT_DAY(LAST_DAY(ADD_MONTHS('2017-10-26', 1)) - 7, 'ŚRODA')
+      ELSE
+        NEXT_DAY(LAST_DAY('2017-10-26') - 7, 'ŚRODA')
+      END
+  ELSE
+    NEXT_DAY(LAST_DAY(ADD_MONTHS('2017-10-26', 1)) - 7, 'ŚRODA')
+  END         "WYPLATA"
+FROM Kocury;

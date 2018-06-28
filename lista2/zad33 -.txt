@@ -1,0 +1,125 @@
+-- a
+SELECT      DECODE(plec, 'Kotka', ' ', nazwa) nazwa,
+            plec,
+            ile,
+            szefunio,
+            bandzior,
+            lowczy,
+            lapacz,
+            kot,
+            milusia,
+            dzielczy,
+            suma
+FROM        (
+                SELECT      nazwa,
+                            DECODE(plec, 'M', 'Kocor', 'Kotka') plec,
+                            TO_CHAR(COUNT(pseudo)) ile,
+                            TO_CHAR(SUM(DECODE(funkcja, 'SZEFUNIO', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) szefunio,
+                            TO_CHAR(SUM(DECODE(funkcja, 'BANDZIOR', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) bandzior,
+                            TO_CHAR(SUM(DECODE(funkcja, 'LOWCZY', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) lowczy,
+                            TO_CHAR(SUM(DECODE(funkcja, 'LAPACZ', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) lapacz,
+                            TO_CHAR(SUM(DECODE(funkcja, 'KOT', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) kot,
+                            TO_CHAR(SUM(DECODE(funkcja, 'MILUSIA', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) milusia,
+                            TO_CHAR(SUM(DECODE(funkcja, 'DZIELCZY', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) dzielczy,
+                            TO_CHAR(SUM(NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0))) suma
+                FROM        Kocury NATURAL JOIN Bandy
+                GROUP BY    nazwa, plec
+                UNION
+                SELECT 'Z--------------', '------', '--------', '---------', '---------', '--------', '--------', '--------', '--------', '--------', '--------'
+                FROM DUAL
+                UNION
+                SELECT      'Zjada razem' nazwa,
+                            ' ' plec,
+                            ' ' ile,
+                            TO_CHAR(SUM(DECODE(funkcja, 'SZEFUNIO', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) szefunio,
+                            TO_CHAR(SUM(DECODE(funkcja, 'BANDZIOR', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) bandzior,
+                            TO_CHAR(SUM(DECODE(funkcja, 'LOWCZY', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) lowczy,
+                            TO_CHAR(SUM(DECODE(funkcja, 'LAPACZ', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) lapacz,
+                            TO_CHAR(SUM(DECODE(funkcja, 'KOT', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) kot,
+                            TO_CHAR(SUM(DECODE(funkcja, 'MILUSIA', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) milusia,
+                            TO_CHAR(SUM(DECODE(funkcja, 'DZIELCZY', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) dzielczy,
+                            TO_CHAR(SUM(NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0))) suma
+                FROM        Kocury NATURAL JOIN Bandy
+                ORDER BY 1, 2
+            );
+
+-- b
+SELECT
+  DECODE("PLEC", 'Kocur', ' ', NAZWA) "NAZWA BANDY",
+  "PLEC",
+  "ILE",
+  "SZEFUNIO",
+  "BANDZIOR",
+  "LOWCZY",
+  "LAPACZ",
+  "KOT",
+  "MILUSIA",
+  "DZIELCZY",
+  "SUMA"
+FROM (
+  SELECT
+    NAZWA,
+    DECODE(PLEC, 'M', 'Kocur', 'Kotka') "PLEC",
+    TO_CHAR(ILE)                        ILE,
+    TO_CHAR(NVL(SZEFUNIO, 0))           "SZEFUNIO",
+    TO_CHAR(NVL(BANDZIOR, 0))           "BANDZIOR",
+    TO_CHAR(NVL(LOWCZY, 0))             "LOWCZY",
+    TO_CHAR(NVL(LAPACZ, 0))             "LAPACZ",
+    TO_CHAR(NVL(KOT, 0))                "KOT",
+    TO_CHAR(NVL(MILUSIA, 0))            "MILUSIA",
+    TO_CHAR(NVL(DZIELCZY, 0))           "DZIELCZY",
+    TO_CHAR(SUMA)                       SUMA
+  FROM
+    (
+      SELECT
+        NAZWA,
+        PLEC,
+        FUNKCJA,
+        NVL(PRZYDZIAL_MYSZY, 0) + NVL(MYSZY_EXTRA, 0) WSZYSTKIE_MYSZY
+      FROM KOCURY
+        NATURAL JOIN BANDY
+      )
+      PIVOT (
+        SUM(WSZYSTKIE_MYSZY)
+        FOR FUNKCJA
+        IN ('SZEFUNIO' "SZEFUNIO", 'BANDZIOR' "BANDZIOR", 'LOWCZY' "LOWCZY", 'LAPACZ' "LAPACZ", 'KOT' "KOT", 'MILUSIA' "MILUSIA", 'DZIELCZY' "DZIELCZY")
+      )
+    NATURAL JOIN
+    (
+      SELECT
+        NAZWA,
+        PLEC,
+        COUNT(PSEUDO)                                               ILE,
+        TO_CHAR(SUM(NVL(PRZYDZIAL_MYSZY, 0) + NVL(MYSZY_EXTRA, 0))) SUMA
+      FROM KOCURY
+        NATURAL JOIN BANDY
+      GROUP BY NAZWA, PLEC
+      )
+  UNION SELECT
+          'Z----------------',
+          '------',
+          '----',
+          '---------',
+          '---------',
+          '---------',
+          '---------',
+          '---------',
+          '---------',
+          '---------',
+          '-------'
+        FROM DUAL
+  UNION SELECT
+          'ZJADA RAZEM',
+          ' ',
+          ' ',
+          TO_CHAR(SUM(DECODE(funkcja, 'SZEFUNIO', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) "SZEFUNIO",
+          TO_CHAR(SUM(DECODE(funkcja, 'BANDZIOR', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) "BANDZIOR",
+          TO_CHAR(SUM(DECODE(funkcja, 'LOWCZY', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0)))   "LOWCZY",
+          TO_CHAR(SUM(DECODE(funkcja, 'LAPACZ', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0)))   "LAPACZ",
+          TO_CHAR(SUM(DECODE(funkcja, 'KOT', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0)))      "KOT",
+          TO_CHAR(SUM(DECODE(funkcja, 'MILUSIA', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0)))  "MILUSIA",
+          TO_CHAR(SUM(DECODE(funkcja, 'DZIELCZY', NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0), 0))) "DZIELCZY",
+          TO_CHAR(SUM(NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0)))                                 "SUMA"
+        FROM
+          Kocury)
+ORDER BY NAZWA, PLEC DESC;

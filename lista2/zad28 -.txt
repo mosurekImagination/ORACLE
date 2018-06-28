@@ -1,0 +1,38 @@
+SELECT      EXTRACT(YEAR FROM w_stadku_od) || '',
+            COUNT(pseudo)
+FROM        Kocury
+GROUP BY    EXTRACT(YEAR FROM w_stadku_od)
+HAVING      COUNT(pseudo) IN (
+                (
+                    SELECT * FROM
+                        (SELECT      DISTINCT COUNT(pseudo)
+                         FROM        Kocury
+                         GROUP BY    EXTRACT(YEAR FROM w_stadku_od)
+                         HAVING      COUNT(pseudo) > (
+                                        SELECT      AVG(COUNT(EXTRACT(YEAR FROM w_stadku_od)))
+                                        FROM        Kocury
+                                        GROUP BY    EXTRACT(YEAR FROM w_stadku_od)
+                                    )
+                         ORDER BY    COUNT(pseudo))
+                    WHERE       ROWNUM = 1
+                ),
+                (
+                    SELECT * FROM
+                        (SELECT      DISTINCT COUNT(pseudo)
+                         FROM        Kocury
+                         GROUP BY    EXTRACT(YEAR FROM w_stadku_od)
+                         HAVING      COUNT(pseudo) < (
+                                        SELECT      AVG(COUNT(EXTRACT(YEAR FROM w_stadku_od)))
+                                        FROM        Kocury
+                                        GROUP BY    EXTRACT(YEAR FROM w_stadku_od)
+                                    )
+                         ORDER BY    COUNT(pseudo) DESC)
+                    WHERE       ROWNUM = 1
+                 )
+            )
+UNION
+SELECT      'rednia',
+            ROUND(AVG(COUNT(EXTRACT(YEAR FROM w_stadku_od))), 7)
+FROM        Kocury
+GROUP BY    EXTRACT(YEAR FROM w_stadku_od)
+ORDER BY    2;

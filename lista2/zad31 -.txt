@@ -1,0 +1,21 @@
+CREATE OR REPLACE VIEW Statystyki_Bandy(nazwa, sre_spoz, max_spoz, min_spoz, koty, koty_z_dod)
+AS
+SELECT      nazwa,
+            AVG(NVL(przydzial_myszy, 0)),
+            MAX(NVL(przydzial_myszy, 0)),
+            MIN(NVL(przydzial_myszy, 0)),
+            COUNT(pseudo),
+            COUNT(myszy_extra)
+FROM        Kocury NATURAL JOIN Bandy
+GROUP BY    nazwa;
+ 
+SELECT * FROM Statystyki_Bandy;
+ 
+SELECT      pseudo "PSEUDONIM",
+            imie,
+            funkcja,
+            NVL(przydzial_myszy, 0) "ZJADA",
+            'OD ' || min_spoz || ' DO ' || max_spoz "GRANICE SPOZYCIA",
+            w_stadku_od "LOWI OD"
+FROM        Kocury NATURAL JOIN Bandy NATURAL JOIN Statystyki_Bandy
+WHERE       pseudo = 'PLACEK';

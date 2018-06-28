@@ -1,0 +1,3 @@
+SELECT NR_BANDY "Nr bandy", PLEC "Plec", MIN(PRZYDZIAL_MYSZY) "Minimalny przydzial"
+FROM KOCURY
+GROUP BY NR_BANDY, PLEC

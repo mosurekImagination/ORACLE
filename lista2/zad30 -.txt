@@ -1,0 +1,24 @@
+SELECT      imie,
+            w_stadku_od "WSTAPIL DO STADKA",
+            ' ' " "
+FROM        Kocury k
+WHERE       w_stadku_od != (SELECT MAX(w_stadku_od) FROM Kocury WHERE k.nr_bandy = nr_bandy)
+AND         w_stadku_od != (SELECT MIN(w_stadku_od) FROM Kocury WHERE k.nr_bandy = nr_bandy)
+ 
+UNION ALL
+ 
+SELECT      k.imie,
+            k.w_stadku_od "WSTAPIL DO STADKA",
+            '<--- NAJMLODSZY STAZEM W BANDZIE ' || k.nr_bandy || ' ' || b.nazwa " "
+FROM        Kocury k JOIN Bandy b ON b.nr_bandy = k.nr_bandy
+WHERE       k.w_stadku_od = (SELECT MAX(w_stadku_od) FROM Kocury kmax WHERE kmax.nr_bandy = k.nr_bandy)
+ 
+UNION ALL
+ 
+SELECT      imie,
+            w_stadku_od "WSTAPIL DO STADKA",
+            '<--- NAJSTARSZY STAZEM W BANDZIE ' || nazwa " "
+FROM        Kocury k JOIN Bandy b ON b.nr_bandy = k.nr_bandy
+WHERE       k.w_stadku_od = (SELECT MIN(w_stadku_od) FROM Kocury kmin WHERE kmin.nr_bandy = k.nr_bandy)
+ 
+ORDER BY    1;

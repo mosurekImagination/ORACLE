@@ -1,0 +1,33 @@
+SELECT k1.imie, NVL(k1.przydzial_myszy, 0) + NVL(k1.myszy_extra, 0) "zjada",
+        k1.nr_bandy, AVG(NVL(k2.przydzial_myszy, 0) + NVL(k2.myszy_extra, 0))
+FROM Kocury k1 join Kocury k2 on k1.nr_bandy = k2.nr_bandy
+WHERE k1.plec='M'
+GROUP BY k1.imie, NVL(k1.przydzial_myszy, 0) + NVL(k1.myszy_extra, 0), k1.nr_bandy
+HAVING NVL(k1.przydzial_myszy, 0) + NVL(k1.myszy_extra, 0) < AVG(NVL(k2.przydzial_myszy, 0) + NVL(k2.myszy_extra, 0))
+
+--Zadanie 29b
+SELECT          imie,
+                NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0) "ZJADA",
+                nr_bandy "NR BANDY",
+                TO_CHAR(srednia, '99.99') "SREDNIA BANDY"
+FROM            (SELECT nr_bandy, AVG(NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0)) srednia FROM Kocury GROUP BY nr_bandy)
+NATURAL JOIN    Kocury
+WHERE           NVL(przydzial_myszy, 0) + NVL(myszy_extra, 0) < srednia
+AND             plec = 'M';
+ 
+--Zadanie 29c
+SELECT      k1.imie,
+            NVL(k1.przydzial_myszy, 0) + NVL(k1.myszy_extra, 0) "ZJADA",
+            k1.nr_bandy "NR BANDY",
+            TO_CHAR((
+                SELECT  AVG(NVL(k2.przydzial_myszy, 0) + NVL(k2.myszy_extra, 0))
+                FROM    Kocury k2
+                WHERE   k1.nr_bandy = k2.nr_bandy
+            ), '99.99') "SREDNIA BANDY"
+FROM        Kocury k1
+WHERE       NVL(k1.przydzial_myszy, 0) + NVL(k1.myszy_extra, 0) < (
+                SELECT  AVG(NVL(k3.przydzial_myszy, 0) + NVL(k3.myszy_extra, 0))
+                FROM    Kocury k3
+                WHERE   k1.nr_bandy = k3.nr_bandy
+            )
+AND         plec = 'M';

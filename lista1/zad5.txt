@@ -1,0 +1,7 @@
+SELECT PSEUDO,
+     REGEXP_REPLACE(
+     REGEXP_REPLACE(pseudo, 'A', '#', 1,1
+     ), 'L', '%',1,1),
+     'Po wymianie A na # i L na %'
+FROM KOCURY
+WHERE INSTR(pseudo, 'A') > 0 AND INSTR(pseudo, 'L') > 0;

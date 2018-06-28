@@ -1,0 +1,93 @@
+ZADANIE 34
+DECLARE
+    fun Funkcje.funkcja%TYPE := '&funkcja';
+    ilosc INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO ilosc
+    FROM Funkcje
+    WHERE funkcja = fun;
+    IF  ilosc > 0 
+        THEN DBMS_OUTPUT.PUT_LINE('JEST KOT O TAKIEJ FUNKCJI');
+    ELSE DBMS_OUTPUT.PUT_LINE('BRAK KOTA O PODANEJ FUNKCJI');
+    END IF;
+EXCEPTION 
+    WHEN NO_DATA_FOUND
+        THEN DBMS_OUTPUT.PUT_LINE('BLEDNA FUNKCJA');
+    WHEN OTHERS
+        THEN DBMS_OUTPUT.PUT_LINE(SQLERRM);
+END;
+
+-----------------------ZADANIE 35-----------------
+
+
+DECLARE 
+    imieKota Kocury.imie%TYPE:= '&imieKota';
+    przydzialM Kocury.przydzial_myszy%TYPE;
+    wStadkuOd Kocury.w_stadku_od%TYPE;
+    a BOOLEAN:= FALSE;
+    b BOOLEAN:= FALSE;
+    c BOOLEAN:= FALSE;
+BEGIN
+    SELECT przydzial_myszy, imie, w_stadku_od 
+        INTO przydzialM, imieKota, wStadkuOd
+    FROM KOCURY
+    WHERE imie=imieKota;
+    
+    DBMS_OUTPUT.PUT(imieKota); 
+    IF przydzialM*12 > 700
+        THEN DBMS_OUTPUT.PUT_LINE(' ma roczny przydzial myszy wiekszy od 700');
+        a := true;
+    ELSE
+        DBMS_OUTPUT.PUT_LINE(' przydzial mniejszy niz 700');
+    END IF;
+    
+    DBMS_OUTPUT.PUT(imieKota); 
+    IF INSTR(imieKota, 'A') > 0
+        THEN DBMS_OUTPUT.PUT_LINE(' zawiera litere A');
+        b := true;
+    ELSE
+        DBMS_OUTPUT.PUT_LINE(' nie zawiera litery A');
+    END IF;
+    
+    DBMS_OUTPUT.PUT(imieKota); 
+
+    IF EXTRACT (MONTH from wStadkuOd) = 1
+        THEN DBMS_OUTPUT.PUT_LINE( ' PRZYSTAPIL DO STADKA W STYCZNIU');
+        c := true;
+    ELSE
+        DBMS_OUTPUT.PUT_LINE(' NIE PRZYSTAPIL W STYCZNIU');
+    END IF;
+    
+    IF (NOT(a or b or c)) THEN 
+        DBMS_OUTPUT.PUT(imieKota); 
+        DBMS_OUTPUT.PUT_LINE(' NIE ODPOWIADA ZADNYM KRYTERIOM');
+    END IF;
+END;
+
+------------------------------ZADANIE 36-----------------------
+------------------------------ZADANIE 37-----------------------
+DECLARE
+    TYPE tabelaKotow IS TABLE OF Kocury%ROWTYPE INDEX BY BINARY_INTEGER;
+    Koty tabelaKotow;
+    i BINARY_INTEGER;
+BEGIN 
+    DBMS_OUTPUT.PUT_LINE('Numer   Pseudo   Zjada');
+    FOR i IN 1..5
+     LOOP
+      BEGIN
+        SELECT IMIE, PLEC ,PSEUDO ,FUNKCJA ,SZEF ,W_STADKU_OD ,PRZYDZIAL_MYSZY ,MYSZY_EXTRA ,NR_BANDY
+                INTO Koty(i)
+        FROM(
+            SELECT IMIE , PLEC ,PSEUDO ,FUNKCJA ,SZEF ,W_STADKU_OD ,PRZYDZIAL_MYSZY ,MYSZY_EXTRA ,NR_BANDY,
+              NVL(przydzial_myszy,0) + NVL(myszy_extra,0) AS ZJADA,
+              DENSE_RANK()
+              OVER (ORDER BY NVL(Kocury.przydzial_myszy,0) + NVL(Kocury.myszy_extra,0) DESC) POZYCJA
+              FROM Kocury)
+        WHERE i = POZYCJA;
+    DBMS_OUTPUT.PUT_LINE(i ||' ' || Koty(i).pseudo ||' ' || (Koty(i).przydzial_myszy + NVL(Koty(i).myszy_extra,0)));
+      END;
+     END LOOP;
+        
+EXCEPTION 
+    WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE(SQLERRM);
+END;

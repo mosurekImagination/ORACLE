@@ -1,0 +1,18 @@
+SELECT PSEUDO || ' - ' || 
+        CASE  COUNT(PSEUDO)
+            WHEN 1 THEN 'UNIKALNY'
+            ELSE 'NIEUNIKALNY, wystapil:' || COUNT(PSEUDO) || 'razy'
+            END 
+            "CZY UNIKALNY"
+FROM KOCURY
+GROUP BY PSEUDO
+
+SELECT SZEF || ' - ' || 
+        CASE  COUNT(SZEF)
+            WHEN 1 THEN 'UNIKALNY'
+            ELSE 'NIEUNIKALNY, wystapil:' || COUNT(SZEF) || 'razy'
+            END 
+            "CZY UNIKALNY"
+FROM KOCURY
+WHERE SZEF IS NOT NULL
+GROUP BY SZEF

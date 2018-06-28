@@ -1,0 +1,49 @@
+CREATE OR REPLACE VIEW Najstarsi_Stazem
+AS
+SELECT      pseudo,
+            nr_bandy,
+            plec,
+            przydzial_myszy,
+            myszy_extra
+FROM        Kocury
+WHERE       w_stadku_od IN (
+                SELECT w_stadku_od FROM (
+                    SELECT w_stadku_od FROM Kocury NATURAL JOIN Bandy
+                    WHERE nazwa = 'CZARNI RYCERZE'
+                    ORDER BY w_stadku_od
+                    FETCH NEXT 3 ROWS ONLY
+                )
+            )
+OR          w_stadku_od IN (
+                SELECT w_stadku_od FROM (
+                    SELECT w_stadku_od FROM Kocury NATURAL JOIN Bandy
+                    WHERE nazwa = 'LACIACI MYSLIWI'
+                    ORDER BY w_stadku_od
+                    FETCH NEXT 3 ROWS ONLY
+                )
+            );
+ 
+SELECT  pseudo,
+        plec,
+        NVL(przydzial_myszy, 0) "Myszy przed podw.",
+        NVL(myszy_extra, 0) "Extra przed podw."
+FROM    Najstarsi_Stazem;
+ 
+UPDATE  Najstarsi_Stazem ns
+SET     przydzial_myszy =
+            CASE WHEN plec = 'D' THEN
+                przydzial_myszy + (SELECT MIN(NVL(przydzial_myszy, 0)) * 0.1 FROM Kocury)
+            ELSE
+                NVL(przydzial_myszy, 0) + 10
+            END,
+        myszy_extra =
+            NVL(myszy_extra, 0) + (SELECT AVG(NVL(myszy_extra, 0)) * 0.15 FROM Kocury WHERE ns.nr_bandy = nr_bandy);
+ 
+SELECT  pseudo,
+        plec,
+        NVL(przydzial_myszy, 0) "Myszy po podw.",
+        NVL(myszy_extra, 0) "Extra po podw."
+FROM    Najstarsi_Stazem;
+ 
+ROLLBACK;
+ 
